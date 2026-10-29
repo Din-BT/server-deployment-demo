@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: nt106-self-hosted-server
+    runtime: docker
+    rootDir: self-hosted-server
+    dockerfilePath: Dockerfile
+    plan: free
+    region: singapore
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+    healthCheckPath: /health
