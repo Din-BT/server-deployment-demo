@@ -1,0 +1,211 @@
+{
+  "info": {
+    "name": "NT106 - So Sánh Server (Self-Hosted vs Supabase)",
+    "_postman_id": "nt106-server-comparison-collection",
+    "description": "Bộ sưu tập Postman phục vụ môn NT106 - Lập trình mạng căn bản.\nKiểm tra và đo RTT giữa Self-Hosted Web API (.NET 10) và BaaS (Supabase REST).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "SELF_HOSTED_URL",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "SUPABASE_URL",
+      "value": "https://your-project.supabase.co",
+      "type": "string"
+    },
+    {
+      "key": "SUPABASE_ANON_KEY",
+      "value": "your-anon-key-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Self-Hosted Server (.NET 10)",
+      "item": [
+        {
+          "name": "GET /api/ping (Echo & Latency RTT)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{SELF_HOSTED_URL}}/api/ping",
+              "host": ["{{SELF_HOSTED_URL}}"],
+              "path": ["api", "ping"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response time is under 100ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(100);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/logs (Gửi bản tin log mạng)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"Postman-Runner-NT106\",\n  \"level\": \"INFO\",\n  \"message\": \"Gói tin kiểm thử truyền nhận qua Postman\",\n  \"metadata\": {\n    \"env\": \"Testing\",\n    \"course\": \"NT106\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{SELF_HOSTED_URL}}/api/logs",
+              "host": ["{{SELF_HOSTED_URL}}"],
+              "path": ["api", "logs"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Log is stored successfully', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('received');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/logs (Lấy danh sách log)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{SELF_HOSTED_URL}}/api/logs?limit=20",
+              "host": ["{{SELF_HOSTED_URL}}"],
+              "path": ["api", "logs"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /api/metrics (Giám sát RAM/CPU Server)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{SELF_HOSTED_URL}}/api/metrics",
+              "host": ["{{SELF_HOSTED_URL}}"],
+              "path": ["api", "metrics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. BaaS Supabase (Singapore Region)",
+      "item": [
+        {
+          "name": "POST /rest/v1/network_logs (Gửi bản tin REST API)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{SUPABASE_ANON_KEY}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=minimal"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sent_at\": \"2026-10-29T12:00:00Z\",\n  \"client_id\": \"postman-client\",\n  \"message\": \"Gói tin kiểm thử Supabase từ Postman\",\n  \"payload_size\": 120\n}"
+            },
+            "url": {
+              "raw": "{{SUPABASE_URL}}/rest/v1/network_logs",
+              "host": ["{{SUPABASE_URL}}"],
+              "path": ["rest", "v1", "network_logs"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /rest/v1/network_logs (Đọc dữ liệu bản tin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{SUPABASE_ANON_KEY}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPABASE_URL}}/rest/v1/network_logs?select=*&limit=10",
+              "host": ["{{SUPABASE_URL}}"],
+              "path": ["rest", "v1", "network_logs"],
+              "query": [
+                {
+                  "key": "select",
+                  "value": "*"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

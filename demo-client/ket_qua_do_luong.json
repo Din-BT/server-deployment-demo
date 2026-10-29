@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-10-29T12:53:45.808868+00:00",
+  "self_hosted": {
+    "target": "Self-Hosted (.NET 10)",
+    "count": 5,
+    "success": 5,
+    "success_rate": 100.0,
+    "rtts": [
+      24.329999985639006,
+      29.280099959578365,
+      11.512299999594688,
+      25.685600005090237,
+      12.642199988476932
+    ],
+    "min": 11.51,
+    "avg": 20.69,
+    "median": 24.33,
+    "p95": 29.28,
+    "max": 29.28,
+    "avg_body_size": 165.8,
+    "metrics": {
+      "timestampUtc": "2026-10-29T12:53:45.8076297Z",
+      "uptimeSeconds": 901.8,
+      "uptimeFormatted": "0d 00h:15m:01s",
+      "memoryWorkingSetMB": 88.12,
+      "memoryAllocatedMB": 10.34,
+      "threadCount": 31,
+      "totalProcessorTimeSeconds": 2.98,
+      "totalRequestsReceived": 24,
+      "totalPingRequests": 2,
+      "totalLogPostRequests": 17,
+      "totalStoredLogsCount": 17,
+      "operatingSystem": "Microsoft Windows 10.0.26200",
+      "dotnetVersion": ".NET 10.0.12",
+      "processorCount": 16
+    }
+  },
+  "supabase": null
+}

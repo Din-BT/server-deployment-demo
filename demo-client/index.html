@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NT106 - Demo Client & Bộ Công Cụ Đo Lường Hiệu Năng</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- HEADER & TIÊU ĐỀ ĐỒ ÁN -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="header-left">
+        <span class="badge-subject">NT106 - LẬP TRÌNH MẠNG CĂN BẢN (UIT)</span>
+        <h1>Bộ Đo Lường & Client Demo So Sánh Server</h1>
+        <p class="subtitle">Mô hình: <strong>BaaS (Supabase)</strong> vs <strong>Tự Triển Khai (Self-Hosted .NET 10)</strong> • Nhóm NT106</p>
+      </div>
+      <div class="header-right">
+        <span class="status-pill status-ready" id="clientStatus">Sẵn sàng thử nghiệm</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- CẤU HÌNH KẾT NỐI SERVER -->
+    <section class="card config-card">
+      <div class="card-header">
+        <h2>⚙️ 1. Cấu hình Kết Nối Endpoint Server</h2>
+        <button id="btnSaveConfig" class="btn btn-secondary btn-sm">💾 Lưu Cấu Hình</button>
+      </div>
+      <div class="config-grid">
+        <!-- Self-Hosted Config -->
+        <div class="config-col">
+          <h3>Self-Hosted Server (.NET 10 Web API)</h3>
+          <div class="form-group">
+            <label for="selfHostedUrl">Base URL (Local hoặc Render/Railway):</label>
+            <input type="text" id="selfHostedUrl" value="http://localhost:5000" placeholder="http://localhost:5000">
+            <small class="helper-text">Ví dụ Local: <code>http://localhost:5000</code> | Cloud: <code>https://server-demo.onrender.com</code></small>
+          </div>
+          <div class="endpoint-badges">
+            <span class="pill">POST /api/logs</span>
+            <span class="pill">GET /api/ping</span>
+            <span class="pill">GET /api/metrics</span>
+          </div>
+        </div>
+
+        <!-- Supabase Config -->
+        <div class="config-col">
+          <h3>BaaS Supabase (REST API)</h3>
+          <div class="form-group">
+            <label for="supabaseUrl">Supabase Project URL:</label>
+            <input type="text" id="supabaseUrl" placeholder="https://xxxxxxxx.supabase.co">
+          </div>
+          <div class="form-group">
+            <label for="supabaseKey">Supabase Anon Public Key:</label>
+            <input type="password" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+            <small class="helper-text">Lấy tại: Supabase Dashboard &gt; Project Settings &gt; API</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KHU VỰC DEMO TRỰC TIẾP (PHÚT 2 & PHÚT 3 TRONG KỊCH BẢN THUYẾT TRÌNH) -->
+    <section class="demo-section">
+      <div class="section-title">
+        <h2>🚀 2. Kịch Bản Demo Trực Tiếp Trước Lớp (5 Phút)</h2>
+        <p>Bấm các nút bên dưới để gửi bản tin mạng và kiểm tra phản hồi tức thì.</p>
+      </div>
+
+      <div class="demo-grid">
+        <!-- DEMO SUPABASE (PHÚT 2) -->
+        <div class="card demo-card card-supabase">
+          <div class="demo-card-badge">DEMO PHÚT 2</div>
+          <div class="card-header">
+            <h3>BaaS - Supabase</h3>
+            <span class="badge-role">Phần của Tuyển</span>
+          </div>
+          <p class="demo-desc">
+            Gửi bản tin trực tiếp vào bảng <code>network_logs</code> qua HTTPS REST API. Dashboard Supabase sẽ nhảy số Realtime mà không cần backend trung gian.
+          </p>
+
+          <div class="form-group">
+            <label for="msgSupabase">Nội dung bản tin:</label>
+            <input type="text" id="msgSupabase" value="NT106 Demo - Gửi tới Supabase BaaS">
+          </div>
+
+          <button id="btnSendSupabase" class="btn btn-supabase btn-block">
+            <span class="btn-icon">⚡</span> Gửi Dữ Liệu Lên Supabase (Phút 2)
+          </button>
+
+          <!-- Kết quả phản hồi Supabase -->
+          <div class="result-box" id="resSupabaseBox">
+            <div class="result-row">
+              <span class="result-label">Mã phản hồi:</span>
+              <span class="result-value" id="statusSupabase">Chưa gửi</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Độ trễ Round-Trip (RTT):</span>
+              <span class="result-value highlight" id="rttSupabase">-- ms</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Kích thước Payload:</span>
+              <span class="result-value" id="sizeSupabase">-- bytes</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEMO SELF-HOSTED (PHÚT 3) -->
+        <div class="card demo-card card-selfhosted">
+          <div class="demo-card-badge">DEMO PHÚT 3</div>
+          <div class="card-header">
+            <h3>Self-Hosted Server (.NET 10)</h3>
+            <span class="badge-role">Phần của Vin</span>
+          </div>
+          <p class="demo-desc">
+            Gửi yêu cầu HTTP POST đến Web API tự phát triển. Server kiểm soát toàn bộ luồng dữ liệu, in log lên console và thu thập chỉ số RAM/CPU.
+          </p>
+
+          <div class="form-group">
+            <label for="msgSelfHosted">Nội dung bản tin:</label>
+            <input type="text" id="msgSelfHosted" value="NT106 Demo - Gửi tới Self-Hosted Server">
+          </div>
+
+          <div class="btn-group-row">
+            <button id="btnSendSelfHosted" class="btn btn-primary">
+              <span class="btn-icon">🚀</span> Gửi Log (POST /api/logs)
+            </button>
+            <button id="btnPingSelfHosted" class="btn btn-secondary">
+              <span class="btn-icon">📡</span> Ping (Echo RTT)
+            </button>
+            <button id="btnMetricsSelfHosted" class="btn btn-secondary">
+              <span class="btn-icon">📊</span> Xem RAM/CPU
+            </button>
+          </div>
+
+          <!-- Kết quả phản hồi Self-Hosted -->
+          <div class="result-box" id="resSelfHostedBox">
+            <div class="result-row">
+              <span class="result-label">Mã phản hồi:</span>
+              <span class="result-value" id="statusSelfHosted">Chưa gửi</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Độ trễ Round-Trip (RTT):</span>
+              <span class="result-value highlight" id="rttSelfHosted">-- ms</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Kích thước Payload:</span>
+              <span class="result-value" id="sizeSelfHosted">-- bytes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KHU VỰC ĐO LƯỜNG & BENCHMARK TỰ ĐỘNG (NGÀY 3 & PHÚT 4-5) -->
+    <section class="card benchmark-section">
+      <div class="card-header">
+        <div>
+          <h2>📊 3. Bộ Đo Lường Đối Sánh Hiệu Năng Tự Động (Benchmark Suite)</h2>
+          <p class="subtitle">Thực hiện kiểm thử tải hàng loạt (50 - 100 requests) để thu thập dữ liệu đưa vào Slide báo cáo.</p>
+        </div>
+        <div class="benchmark-controls">
+          <label for="benchmarkCount">Số lượng requests:</label>
+          <select id="benchmarkCount" class="select-input">
+            <option value="10">10 requests (Kiểm tra nhanh)</option>
+            <option value="50" selected>50 requests (Chuẩn bài học)</option>
+            <option value="100">100 requests (Đo tải sâu)</option>
+          </select>
+          <button id="btnRunBenchmark" class="btn btn-warning">
+            <span class="btn-icon">⚡</span> Bắt Đầu Đo Đối Sánh Cả 2 Bên
+          </button>
+        </div>
+      </div>
+
+      <!-- Thanh tiến trình Benchmark -->
+      <div id="benchmarkProgressContainer" class="progress-container hidden">
+        <div class="progress-bar" id="benchmarkProgressBar" style="width: 0%;"></div>
+        <span class="progress-text" id="benchmarkProgressText">Đang chuẩn bị...</span>
+      </div>
+
+      <!-- Bảng số liệu đối sánh kết quả -->
+      <div class="table-responsive">
+        <table class="benchmark-table">
+          <thead>
+            <tr>
+              <th>Tiêu chí so sánh (Môn NT106)</th>
+              <th>BaaS (Supabase Cloud Singapore)</th>
+              <th>Self-Hosted Server (.NET 10)</th>
+              <th>Nhận xét kỹ thuật</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>RTT Tối thiểu (Min Latency)</strong></td>
+              <td id="bmSupabaseMin">-- ms</td>
+              <td id="bmSelfMin">-- ms</td>
+              <td>Thời gian phản hồi nhanh nhất</td>
+            </tr>
+            <tr>
+              <td><strong>RTT Trung bình (Avg Latency)</strong></td>
+              <td id="bmSupabaseAvg" class="highlight-val">-- ms</td>
+              <td id="bmSelfAvg" class="highlight-val">-- ms</td>
+              <td>Chỉ số so sánh cốt lõi cho Slide</td>
+            </tr>
+            <tr>
+              <td><strong>RTT P95 (95% requests nhanh hơn)</strong></td>
+              <td id="bmSupabaseP95">-- ms</td>
+              <td id="bmSelfP95">-- ms</td>
+              <td>Đo độ ổn định mạng (Jitter)</td>
+            </tr>
+            <tr>
+              <td><strong>RTT Tối đa (Max Latency - Lạnh)</strong></td>
+              <td id="bmSupabaseMax">-- ms</td>
+              <td id="bmSelfMax">-- ms</td>
+              <td>Bao gồm thời gian bắt tay TLS lần đầu</td>
+            </tr>
+            <tr>
+              <td><strong>Kích thước Gói tin (Payload + Header)</strong></td>
+              <td id="bmSupabasePayload">~1.2 - 1.5 KB (JWT + HTTPS)</td>
+              <td id="bmSelfPayload">~300 - 450 bytes (Gọn nhẹ)</td>
+              <td>Đo bằng Wireshark / F12 Network</td>
+            </tr>
+            <tr>
+              <td><strong>Tài nguyên tiêu thụ Server</strong></td>
+              <td>Serverless (Không cần quản lý)</td>
+              <td id="bmSelfMemory">~25 - 45 MB RAM (.NET 10)</td>
+              <td>Đo qua <code>/api/metrics</code></td>
+            </tr>
+            <tr>
+              <td><strong>Tỷ lệ Thành công (Success Rate)</strong></td>
+              <td id="bmSupabaseSuccess">-- %</td>
+              <td id="bmSelfSuccess">-- %</td>
+              <td>Độ tin cậy truyền nhận dữ liệu</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="benchmark-footer">
+        <button id="btnExportCsv" class="btn btn-secondary btn-sm" disabled>📥 Xuất Dữ Liệu Ra File CSV</button>
+        <span class="text-muted">* Dữ liệu đo trực tiếp qua Fetch API với high-resolution timer (performance.now).*</span>
+      </div>
+    </section>
+
+    <!-- CONSOLE NHẬT KÝ BẢN TIN MẠNG -->
+    <section class="card log-console-card">
+      <div class="card-header">
+        <h2>📝 4. Nhật Ký Bắt Gói Tin & Phản Hồi Mạng (Network Log Console)</h2>
+        <button id="btnClearConsole" class="btn btn-secondary btn-sm">🧹 Xóa Màn Hình</button>
+      </div>
+      <div class="console-window" id="consoleWindow">
+        <div class="console-entry info">
+          <span class="timestamp">[00:00:00]</span> [HỆ THỐNG] Client NT106 đã khởi tạo. Nhập thông tin cấu hình và bấm gửi dữ liệu để kiểm tra kết nối mạng.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>Đồ án NT106: So sánh Triển khai Server (BaaS vs Self-Hosted) • UIT - ĐHQG TP.HCM</p>
+      <p class="footer-team">Phân công: <strong>Vin</strong> (Tự Deploy) • <strong>Tuyển</strong> (BaaS Supabase) • <strong>TV3</strong> (Client &amp; Đo Lường)</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
